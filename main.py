@@ -1,6 +1,7 @@
 import psycopg2
 import psycopg2.extras
 from config import *
+from requestFunction import *
 
 def connectBdd(nameBdd, userBdd, passwordBdd):
     # Try to connect to an existing database
@@ -20,32 +21,6 @@ def sqlScript(conn, cur, script_file):
         conn.commit()
 
 
-def sqlRequest(conn, cur, cmd):
-    try:
-        cur.execute("""
-        %s
-        """,(cmd))
-    except Exception as e:
-        cur.close()
-        conn.close()
-        exit("error when try to get : " + cmd + "e: " + str(e))
-
-
-def fillTable(file, table, cur, columns, sep=';'):
-    with open(file, 'r') as csvfile:
-        try:
-            cur.copy_from(csvfile, table, sep=sep, columns=columns)
-        except Exception as e:
-            exit("copy_from exception : "+str(e))
-
-
-def rowsToString(rows, indices):
-    page=''
-    for d in rows:
-        line = ' | '.join([str(d[i]) for i in indices])
-        page += line + '\n'
-    return page
-    
 
 
 if __name__ == "__main__":
@@ -61,14 +36,35 @@ if __name__ == "__main__":
     fillTable('csv_file/commune.csv', "commune", cur, ['com', 'dep', 'libelle'], sep=',')
     fillTable('csv_file/chefLieuRegion.csv', "chef_lieu_region", cur, ['reg', 'chef_lieu'], sep=',')
     fillTable('csv_file/chefLieuDepartement.csv', "chef_lieu_departement", cur, ['dep', 'chef_lieu'], sep=',')
+    fillTable('csv_file/population_stat.csv', "population_stat", cur, ['codgeo', 'p19_pop', 'p13_pop', 'p08_pop', 'nais1319', 'nais0813', 'dece1319', 'dece0813'], sep=',')
 
-    #affiche les region
-    cur.execute("select * from region;")
-    rows = cur.fetchall()
-    res = rowsToString(rows, [0,1])
-    print(res)
+    ################################ question 1 #############################################
+    #liste des departements de la region données en 2 eme parametre
+    print("liste des departements de la region iles de france")
+    list_departements_region(cur, "11")
 
-    # # affiche les commune
+    #liste des communes de plus de X habitants (parametre 3) d'un département donné (parametre 2)
+    print("liste des communes de plus de 25000 habitants du departement de la gironde")
+    listComDepPopMin(cur, "33", "25000")
+
+    #la region plus peuplee
+    region_plus_peuplee(cur)
+
+    #la region moins peuplee
+    region_moins_peuplee(cur)
+
+
+    ################################ question 2 #############################################
+
+
+
+    # #affiche les region
+    # cur.execute("select * from region;")
+    # rows = cur.fetchall()
+    # res = rowsToString(rows, [0,1])
+    # print(res)
+
+    # # affiche les communes
     # cur.execute("select * from commune;")
     # rows = cur.fetchall()
     # res = rowsToString(rows, [0,1,2])
@@ -91,6 +87,12 @@ if __name__ == "__main__":
     # cur.execute("select * from chef_lieu_departement;")
     # rows = cur.fetchall()
     # res = rowsToString(rows, [0,1])
+    # print(res)
+
+    # #affiche les statistiques de la population (2008 a 2019)
+    # cur.execute("select * from population_stat;")
+    # rows = cur.fetchall()
+    # res = rowsToString(rows, [0,1,2,3,4,5,6,7])
     # print(res)
 
     
