@@ -1,7 +1,6 @@
 import psycopg2
 import psycopg2.extras
 from config import *
-import csv
 
 def connectBdd(nameBdd, userBdd, passwordBdd):
     # Try to connect to an existing database
@@ -58,8 +57,8 @@ if __name__ == "__main__":
 
     #remplissage des tables
     fillTable('csv_file/region.csv', "region", cur, ['reg', 'libelle'], sep=',')
-    fillTable('csv_file/commune.csv', "commune", cur, ['com', 'dep', 'libelle'], sep=',')
     fillTable('csv_file/departement.csv', "departement", cur, ['dep', 'reg', 'libelle'], sep=',')
+    fillTable('csv_file/commune.csv', "commune", cur, ['com', 'dep', 'libelle'], sep=',')
     fillTable('csv_file/chefLieuRegion.csv', "chef_lieu_region", cur, ['reg', 'chef_lieu'], sep=',')
     fillTable('csv_file/chefLieuDepartement.csv', "chef_lieu_departement", cur, ['dep', 'chef_lieu'], sep=',')
 
@@ -69,30 +68,30 @@ if __name__ == "__main__":
     res = rowsToString(rows, [0,1])
     print(res)
 
-    # affiche les commune
-    cur.execute("select * from commune;")
-    rows = cur.fetchall()
-    res = rowsToString(rows, [0,1,2])
-    print(res)
+    # # affiche les commune
+    # cur.execute("select * from commune;")
+    # rows = cur.fetchall()
+    # res = rowsToString(rows, [0,1,2])
+    # print(res)
 
-    #affiche les departements
-    print("\n")
-    cur.execute("select * from departement;")
-    rows = cur.fetchall()
-    res = rowsToString(rows, [0,1,2])
-    print(res)
+    # #affiche les departements
+    # print("\n")
+    # cur.execute("select * from departement;")
+    # rows = cur.fetchall()
+    # res = rowsToString(rows, [0,1,2])
+    # print(res)
 
-    #affiche les chef lieu de region
-    cur.execute("select * from chef_lieu_region;")
-    rows = cur.fetchall()
-    res = rowsToString(rows, [0,1])
-    print(res)
+    # #affiche les chef lieu de region
+    # cur.execute("select * from chef_lieu_region;")
+    # rows = cur.fetchall()
+    # res = rowsToString(rows, [0,1])
+    # print(res)
 
-    #affiche les chef lieu de de departement
-    cur.execute("select * from chef_lieu_departement;")
-    rows = cur.fetchall()
-    res = rowsToString(rows, [0,1])
-    print(res)
+    # #affiche les chef lieu de de departement
+    # cur.execute("select * from chef_lieu_departement;")
+    # rows = cur.fetchall()
+    # res = rowsToString(rows, [0,1])
+    # print(res)
 
     
 

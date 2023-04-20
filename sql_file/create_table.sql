@@ -11,7 +11,7 @@ CREATE TABLE departement (
 
 CREATE TABLE commune (
     com CHAR(5) PRIMARY KEY,
-    dep VARCHAR(3) REFERENCES departement(dep),
+    dep VARCHAR(3) NOT NULL REFERENCES departement(dep),
     libelle VARCHAR(200) NOT NULL
 );
 
