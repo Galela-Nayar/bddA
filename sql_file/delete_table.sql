@@ -1,3 +1,7 @@
+DROP VIEW IF EXISTS stat_region CASCADE;
+DROP VIEW IF EXISTS stat_departement CASCADE;
+DROP VIEW IF EXISTS population_departement CASCADE;
+DROP VIEW IF EXISTS population_region CASCADE;
 DROP TABLE population_stat;
 DROP TABLE chef_lieu_departement;
 DROP TABLE chef_lieu_region;
