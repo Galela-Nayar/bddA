@@ -1,9 +1,7 @@
 import psycopg2
 import psycopg2.extras
 from config import *
-from fonctionQuestion1 import *
-from fonctionQuestion2 import *
-from fonctionQuestion3 import *
+from request import *
 
 def connectBdd(nameBdd, userBdd, passwordBdd):
     # Try to connect to an existing database
@@ -23,6 +21,15 @@ def sqlScript(conn, cur, script_file):
         conn.commit()
 
 
+def sqlRequest(conn, cur, cmd):
+    try:
+        cur.execute(cmd)
+    except Exception as e:
+        cur.close()
+        conn.close()
+        exit("error when try to get : " + cmd + "e: " + str(e))
+          
+
 
 #remplis les tables avec le fichier file sur la table "table"
 def fillTable(file, table, cur, columns, sep=';'):
@@ -36,6 +43,8 @@ def fillTable(file, table, cur, columns, sep=';'):
 def saisir_chaine(message):
     chaine = input(message)
     return chaine
+
+
 
 if __name__ == "__main__":
     conn = connectBdd(NAMEBDD, USERBDD, PASSWORDBDD)
@@ -75,14 +84,13 @@ if __name__ == "__main__":
 
     ################################ question 2 #############################################
 
-    #creation des vues
-    create_vue_population_departement_par_annee(cur)
-    create_vue_population_region_par_annee(cur)
-    conn.commit()
+    # Créer deux vues (cf commande CREATE OR REPLACE VIEW) qui donnent la population 
+    # des départements et des régions pour les différentes années.
+    sqlScript(conn, cur, 'sql_file/view_pop_dep_reg.sql')
 
     #### pour ces requetes ils prennent un peu plus de temps a cause du grand nombres de données 
     #### avec les jointures.(donc je les laisses commentés a vous de voir si vous voulez les affichés)
-    
+
     ##affiche la population des départements pour les différentes années
     #print("la population des départements sur les différentes années")
     # cur.execute("select * from population_departement;")
@@ -97,12 +105,14 @@ if __name__ == "__main__":
     # res = rowsToString(rows, [0,1])
     # print(res)
 
+                ######pour aller plus loin####
 
-    # Vue pour agréger les statistiques par departement
-    create_vue_stat_departement(cur)
-    # Vue pour agréger les statistiques par région
-    create_vue_stat_region(cur)
-    conn.commit()
+    # créer deux vues (une pour les régions et une pour les département) 
+    # qui permettent d’agréger les valeurs de toutes les statistiques pour 
+    # les départements et les régions. Lors d'une requête qui utilise la vue, 
+    # l'utilisateur passe l'identifiant de la statistique dont on veut voir la valeur
+    #  pour toute les régions (par ex) ou une région donnée.
+    sqlScript(conn, cur, 'sql_file/view_stat_dep_reg.sql')
 
     region = saisir_chaine("saisisez le numero de la region dont vous voulez voir les statistiques :")
     affiche_statistique_par_region(cur, region)
@@ -112,20 +122,29 @@ if __name__ == "__main__":
 
 
 
-
     ################################ question 3 #############################################
 
     #modification préalable de la structure de la base pour accueillir ces nouvelles informations.
-    cur.execute("""
-        ALTER TABLE departement ADD COLUMN pop_departement FLOAT;
-    """)
-    cur.execute("""
-        ALTER TABLE region ADD COLUMN pop_region FLOAT;
-    """)
-    conn.commit()
-    maj_pop_dep_reg(cur)
-    cur.execute("CALL calcul_pop_departement_region();")
-    conn.commit()
+    sqlRequest(conn, cur, "ALTER TABLE departement ADD COLUMN pop_departement FLOAT;")
+    sqlRequest(conn, cur, "ALTER TABLE region ADD COLUMN pop_region FLOAT;")
+
+    #procédure stockée qui fait ce calcul à partir de la population des communes.
+    sqlScript(conn, cur, 'sql_file/maj_pop_dep_reg.sql')
+    sqlRequest(conn, cur, "CALL calcul_pop_departement_region();")
+
+
+    ################################ question 4 #############################################
+
+    # #bloquer les commandes INSERT, UPDATE et DELETE.pour les tables region et departement
+    sqlScript(conn, cur, 'sql_file/block_update_table_reg_dep.sql')
+
+    # #Ajoutez un trigger qui utilise la procédure stockée précédente pour mettre à jour la population d'un département/région quand la population d'une ville est mise à jour.
+    sqlScript(conn, cur, 'sql_file/trigger_update_pop.sql')
+
+
+    #supprimer toutes les tables de la bdd
+    ##sqlScript(conn, cur, 'sql_file/delete_table.sql')
+    conn.close
 
 
 
@@ -137,7 +156,7 @@ if __name__ == "__main__":
     # res = rowsToString(rows, [0,1])
     # print(res)
 
-    # # affiche les communes
+    # #affiche les communes
     # cur.execute("select * from commune;")
     # rows = cur.fetchall()
     # res = rowsToString(rows, [0,1,2])
@@ -167,8 +186,3 @@ if __name__ == "__main__":
     # rows = cur.fetchall()
     # res = rowsToString(rows, [0,1,2,3,4,5,6,7])
     # print(res)
-
-    
-
-    #sqlScript(conn, cur, 'sql_file/delete_table.sql')
-    conn.close
