@@ -2,23 +2,23 @@ CREATE OR REPLACE FUNCTION maj_pop_ville() RETURNS TRIGGER AS $$
 BEGIN
 
     -- desactive le blocage de la modification des table reg et dep
-    ALTER TABLE regitons DISABLE RULE block_regions_insert;
-    ALTER TABLE regions DISABLE RULE block_regions_update;
-    ALTER TABLE regions DISABLE RULE block_regions_delete;
-    ALTER TABLE departements DISABLE RULE block_departements_insert;
-    ALTER TABLE departements DISABLE RULE block_departements_update;
-    ALTER TABLE departements DISABLE RULE block_departements_delete;
+    ALTER TABLE region DISABLE RULE block_region_insert;
+    ALTER TABLE region DISABLE RULE block_region_update;
+    ALTER TABLE region DISABLE RULE block_region_delete;
+    ALTER TABLE departement DISABLE RULE block_departement_insert;
+    ALTER TABLE departement DISABLE RULE block_departement_update;
+    ALTER TABLE departement DISABLE RULE block_departement_delete;
 
     -- Mettre à jour la population
     CALL calcul_pop_departement_region();
 
     -- reactive le blocage
-    ALTER TABLE regions ENABLE RULE block_regions_insert;
-    ALTER TABLE regions ENABLE RULE block_regions_update;
-    ALTER TABLE regions ENABLE RULE block_regions_delete;
-    ALTER TABLE departements ENABLE RULE block_departements_insert;
-    ALTER TABLE departements ENABLE RULE block_departements_update;
-    ALTER TABLE departements ENABLE RULE block_departements_delete;
+    ALTER TABLE region ENABLE RULE block_region_insert;
+    ALTER TABLE region ENABLE RULE block_region_update;
+    ALTER TABLE region ENABLE RULE block_region_delete;
+    ALTER TABLE departement ENABLE RULE block_departement_insert;
+    ALTER TABLE departement ENABLE RULE block_departement_update;
+    ALTER TABLE departement ENABLE RULE block_departement_delete;
 
     RETURN NEW;
 END;

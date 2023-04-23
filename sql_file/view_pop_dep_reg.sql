@@ -4,9 +4,10 @@ CREATE OR REPLACE VIEW population_departement AS
         SUM(p.p13_pop) AS pop_2013,
         SUM(p.p08_pop) AS pop_2008
     FROM departement d
-    JOIN commune c ON c.dep = d.dep
-    JOIN population_stat p ON p.codgeo = c.com
-    WHERE p.codgeo IN (SELECT com FROM commune WHERE dep = d.dep)
+    JOIN (
+        SELECT codgeo, p19_pop, p13_pop, p08_pop
+        FROM population_stat
+    ) p ON p.codgeo LIKE CONCAT(d.dep, '%')
     GROUP BY d.dep, d.libelle;
 
 
@@ -17,7 +18,8 @@ CREATE OR REPLACE VIEW population_region AS
         SUM(p.p08_pop) AS pop_2008
     FROM region r
     JOIN departement d ON d.reg = r.reg
-    JOIN commune c ON c.dep = d.dep
-    JOIN population_stat p ON p.codgeo = c.com
-    WHERE p.codgeo IN (SELECT com FROM commune WHERE dep IN (SELECT dep FROM departement WHERE reg = r.reg))
+    JOIN (
+        SELECT codgeo, p19_pop, p13_pop, p08_pop
+        FROM population_stat
+    ) p ON p.codgeo LIKE CONCAT(d.dep, '%')
     GROUP BY r.reg, r.libelle;

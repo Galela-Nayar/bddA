@@ -88,8 +88,6 @@ if __name__ == "__main__":
     # des départements et des régions pour les différentes années.
     sqlScript(conn, cur, 'sql_file/view_pop_dep_reg.sql')
 
-    #### pour ces requetes ils prennent un peu plus de temps a cause du grand nombres de données 
-    #### avec les jointures.(donc je les laisses commentés a vous de voir si vous voulez les affichés)
 
     ##affiche la population des départements pour les différentes années
     #print("la population des départements sur les différentes années")
@@ -140,6 +138,35 @@ if __name__ == "__main__":
 
     # #Ajoutez un trigger qui utilise la procédure stockée précédente pour mettre à jour la population d'un département/région quand la population d'une ville est mise à jour.
     sqlScript(conn, cur, 'sql_file/trigger_update_pop.sql')
+
+
+
+    print("je regarde la population de la region 75 pour pouvoir apres verifier si je blobques bien les modifications",end='')
+    sqlRequest(conn, cur, "select pop_region from region where reg='75';")
+    rows = cur.fetchall()
+    res = rowsToString(rows, [0,1])
+    print(res)
+
+    print("j'essaye de modifier la table region pour verifier si mes les regles de blocage fonctionnent bien\n")
+    sqlRequest(conn, cur, "UPDATE region SET pop_region = 1 WHERE reg = '75';")
+
+    print("je reverifie apres avoir essayer de modifier", end='')
+    sqlRequest(conn, cur, "select pop_region from region where reg='75';")
+    rows = cur.fetchall()
+    res = rowsToString(rows, [0,1])
+    print(res)
+
+    print("je modifie la population d'une commune cette region et reverifie la population de la region pour confirmer si le trigger a bien recalculer et modifier",end='')
+    sqlRequest(conn, cur, "UPDATE population_stat SET p19_pop = 1 WHERE codgeo = '33522';")
+    sqlRequest(conn, cur, "select pop_region from region where reg='75';")
+    rows = cur.fetchall()
+    res = rowsToString(rows, [0,1])
+    print(res)
+
+    #je remet la population comme elle etait
+    sqlRequest(conn, cur, "UPDATE population_stat SET p19_pop = 43820 WHERE codgeo = '33522';")
+
+    ################################ question 5 #############################################
 
 
     #supprimer toutes les tables de la bdd
